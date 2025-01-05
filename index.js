@@ -5,7 +5,7 @@ const StandardCopyOption = Java.type("java.nio.file.StandardCopyOption")
 
 const downloadFolder = System.getProperty("user.home") + "/Downloads";
 
-const program_7zipPath = "C:\\Program Files\\7-Zip\\"
+var program_7zipPath = FileLib.read('ModulePacker', "7zipPath.txt")
 
 function getModuleNames() {
     return new File(Config.modulesFolder).list()
@@ -121,3 +121,8 @@ register("command", (modulename, removerepo) => {
     if(args.length == 2) completions = ['true', 'false']
     return completions.filter(module => module.toLowerCase().startsWith(args.length ? args[args.length - 1].toLowerCase() : "")).sort()??[]
 }).setCommandName("zipmodule").setAliases("packmodule")
+
+register("command", (...path) => {
+    program_7zipPath = path.join(" ")
+    FileLib.write("ModulePacker", "7zipPath.txt", program_7zipPath)
+}).setName("set7zippath")
