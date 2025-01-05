@@ -61,6 +61,8 @@ function zipModule(modulename, removerepo = false) {
     let sourceFolderPath = new File(`${Config.modulesFolder}`, modulename).toPath()
     let zipPath = new File(downloadFolder, `${modulename}.zip`).toPath()
     
+    console.log(sourceFolderPath.resolve(modulename))
+
     //Find .gitignore
     let gitignore = undefined
     Files.walk(sourceFolderPath)
@@ -75,7 +77,7 @@ function zipModule(modulename, removerepo = false) {
     .filter(path => !Files.isDirectory(path))
     .forEach(path => {
         if(!gitignore?.test(path) && (!removerepo || !/\\\.git(ignore)?\\?/g.test(path))) {
-            let zipEntry = new ZipEntry(sourceFolderPath.relativize(path).toString());
+            let zipEntry = new ZipEntry(new File(`${Config.modulesFolder}`).toPath().relativize(path).toString());
             zos.putNextEntry(zipEntry);
             Files.copy(path, zos);
             zos.closeEntry();
