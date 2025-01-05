@@ -1,7 +1,7 @@
 {
-  "name": "ModuleZipper",
+  "name": "ModulePacker",
   "creator": "Riccio",
   "entry": "index.js",
   "version": "1.0.1",
-  "description": "Zips Modules considering the .gitignore :O"
+  "description": "Packs Modules considering the .gitignore :O"
 }

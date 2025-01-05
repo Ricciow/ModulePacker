@@ -4,6 +4,7 @@ const ZipOutputStream = Java.type("java.util.zip.ZipOutputStream")
 const Files = Java.type("java.nio.file.Files")
 const ZipEntry = Java.type("java.util.zip.ZipEntry")
 const FileOutputStream = Java.type("java.io.FileOutputStream")
+const StandardCopyOption = Java.type("java.nio.file.StandardCopyOption")
 
 const downloadFolder = System.getProperty("user.home") + "/Downloads";
 
@@ -58,10 +59,10 @@ function createGitignoreRegex(source, gitignore) {
 }
 
 function zipModule(modulename, removerepo = false) {
+    modulename = getModuleNames().find(module => modulename.toLowerCase() === module.toLowerCase())
+
     let sourceFolderPath = new File(`${Config.modulesFolder}`, modulename).toPath()
-    let zipPath = new File(downloadFolder, `${modulename}.zip`).toPath()
-    
-    console.log(sourceFolderPath.resolve(modulename))
+    let zipPath = new File(downloadFolder, `${modulename}`)
 
     //Find .gitignore
     let gitignore = undefined
@@ -71,20 +72,25 @@ function zipModule(modulename, removerepo = false) {
         if(!gitignore) gitignore = createGitignoreRegex(sourceFolderPath , FileLib.read(path))
     })
 
-    //Do the zipping
-    let zos = new ZipOutputStream(new FileOutputStream(zipPath));
+    FileLib.deleteDirectory(zipPath)
+
     Files.walk(sourceFolderPath)
     .filter(path => !Files.isDirectory(path))
     .forEach(path => {
         if(!gitignore?.test(path) && (!removerepo || !/\\\.git(ignore)?\\?/g.test(path))) {
-            let zipEntry = new ZipEntry(new File(`${Config.modulesFolder}`).toPath().relativize(path).toString());
-            zos.putNextEntry(zipEntry);
-            Files.copy(path, zos);
-            zos.closeEntry();
+            let relpath = new File(`${Config.modulesFolder}`).toPath().relativize(path).toString()
+            let newFile = new File(downloadFolder, relpath)
+            let newPath = newFile.toPath()
+            newFile.mkdirs()
+            Files.copy(path, newPath, StandardCopyOption.REPLACE_EXISTING)
         }
     })
-    zos.flush();
-  zos.close();
+
+    if(!removerepo) {
+        if (System.getProperty("os.name").toLowerCase().includes("win")) {
+            Files.setAttribute(new File(zipPath.toPath().toString()+"\\.git").toPath(), "dos:hidden", true);
+        }
+    }
 }
 
 register("command", (modulename, removerepo) => {
