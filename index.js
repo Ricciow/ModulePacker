@@ -63,7 +63,7 @@ function zipModule(modulename, removerepo = false) {
     let sourceFolderPath = new File(`${Config.modulesFolder}`, modulename).toPath()
     let zipPath = new File(downloadFolder, `${modulename}`)
 
-    //Find .gitignore
+    //Find .gitignore and process it
     let gitignore = undefined
     Files.walk(sourceFolderPath)
     .filter(path => !Files.isDirectory(path) && path.endsWith(".gitignore"))
@@ -92,7 +92,7 @@ function zipModule(modulename, removerepo = false) {
             Files.setAttribute(new File(zipPath.toPath().toString()+"\\.git").toPath(), "dos:hidden", true);
         }
         
-        //:skull:
+        //💀
         let zipCommand = `cmd.exe /c cd ${program_7zipPath} && 7z a ${zipPath.toPath().toString()}.zip ${zipPath.toPath().toString()}`
         java.lang.Runtime.getRuntime().exec(java.lang.String.format(zipCommand))
 
