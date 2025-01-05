@@ -1,12 +1,11 @@
 const File = Java.type("java.io.File")
 const System = Java.type("java.lang.System")
-const ZipOutputStream = Java.type("java.util.zip.ZipOutputStream")
 const Files = Java.type("java.nio.file.Files")
-const ZipEntry = Java.type("java.util.zip.ZipEntry")
-const FileOutputStream = Java.type("java.io.FileOutputStream")
 const StandardCopyOption = Java.type("java.nio.file.StandardCopyOption")
 
 const downloadFolder = System.getProperty("user.home") + "/Downloads";
+
+const program_7zipPath = "C:\\Program Files\\7-Zip\\"
 
 function getModuleNames() {
     return new File(Config.modulesFolder).list()
@@ -72,8 +71,10 @@ function zipModule(modulename, removerepo = false) {
         if(!gitignore) gitignore = createGitignoreRegex(sourceFolderPath , FileLib.read(path))
     })
 
+    //Delete file if it already exists
     FileLib.deleteDirectory(zipPath)
 
+    //Make a copy of the folder taking into account gitignore
     Files.walk(sourceFolderPath)
     .filter(path => !Files.isDirectory(path))
     .forEach(path => {
@@ -86,10 +87,17 @@ function zipModule(modulename, removerepo = false) {
         }
     })
 
-    if(!removerepo) {
-        if (System.getProperty("os.name").toLowerCase().includes("win")) {
+    if (System.getProperty("os.name").toLowerCase().includes("win")) {
+        if(!removerepo) {
             Files.setAttribute(new File(zipPath.toPath().toString()+"\\.git").toPath(), "dos:hidden", true);
         }
+        
+        //:skull:
+        let zipCommand = `cmd.exe /c cd ${program_7zipPath} && 7z a ${zipPath.toPath().toString()}.zip ${zipPath.toPath().toString()}`
+        java.lang.Runtime.getRuntime().exec(java.lang.String.format(zipCommand))
+
+        //Delete packed file since it was zipped.
+        FileLib.deleteDirectory(zipPath)
     }
 }
 
@@ -112,4 +120,4 @@ register("command", (modulename, removerepo) => {
     if(args.length == 1) completions = getModuleNames()
     if(args.length == 2) completions = ['true', 'false']
     return completions.filter(module => module.toLowerCase().startsWith(args.length ? args[args.length - 1].toLowerCase() : "")).sort()??[]
-}).setCommandName("zipmodule")
+}).setCommandName("zipmodule").setAliases("packmodule")
