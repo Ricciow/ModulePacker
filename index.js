@@ -97,7 +97,9 @@ function zipModule(modulename, removerepo = false) {
         java.lang.Runtime.getRuntime().exec(java.lang.String.format(zipCommand))
 
         //Delete packed file since it was zipped.
-        FileLib.deleteDirectory(zipPath)
+        setTimeout(() => {
+            FileLib.deleteDirectory(zipPath)
+        }, 60000);
     }
 }
 
